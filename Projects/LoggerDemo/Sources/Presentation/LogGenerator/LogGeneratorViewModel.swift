@@ -8,26 +8,25 @@ import Logger
 
 @MainActor
 final class LogGeneratorViewModel: ObservableObject {
-    
     @Published var selectedCategory: String = "Default"
     @Published var customMessage: String = ""
     @Published var includeMetadata: Bool = false
     @Published var lastLoggedLevel: LogLevel?
-    
+
     let categories = ["Default", "Network", "Auth", "UI", "Database", "Analytics"]
-    
+
     private var sampleMetadata: [String: AnyCodable] {
         [
             "userId": AnyCodable("user_12345"),
             "sessionId": AnyCodable(UUID().uuidString),
-            "timestamp": AnyCodable(Date().timeIntervalSince1970)
+            "timestamp": AnyCodable(Date().timeIntervalSince1970),
         ]
     }
-    
+
     func log(level: LogLevel) {
         let message = customMessage.isEmpty ? sampleMessage(for: level) : customMessage
         let metadata = includeMetadata ? sampleMetadata : nil
-        
+
         Task {
             await Logger.shared.log(
                 level: level,
@@ -36,14 +35,14 @@ final class LogGeneratorViewModel: ObservableObject {
                 metadata: metadata
             )
         }
-        
+
         lastLoggedLevel = level
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.lastLoggedLevel = nil
         }
     }
-    
+
     func logAllLevels() {
         Task {
             for level in LogLevel.allCases {
@@ -56,9 +55,9 @@ final class LogGeneratorViewModel: ObservableObject {
             }
         }
     }
-    
+
     // MARK: - Network Logging Examples
-    
+
     func logNetworkRequest() {
         let requestMetadata: [String: AnyCodable] = [
             "method": "GET",
@@ -66,11 +65,11 @@ final class LogGeneratorViewModel: ObservableObject {
             "headers": [
                 "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NTYiLCJleHAiOjE3MzQyNTYwMDB9.mock_signature_here",
                 "Content-Type": "application/json",
-                "Accept": "application/json"
+                "Accept": "application/json",
             ],
-            "timeout": 30.0
+            "timeout": 30.0,
         ]
-        
+
         Task {
             await Logger.shared.debug(
                 "API 요청 시작",
@@ -78,13 +77,13 @@ final class LogGeneratorViewModel: ObservableObject {
                 metadata: requestMetadata
             )
         }
-        
+
         lastLoggedLevel = .debug
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.lastLoggedLevel = nil
         }
     }
-    
+
     func logNetworkResponse() {
         let responseMetadata: [String: AnyCodable] = [
             "statusCode": 200,
@@ -94,14 +93,14 @@ final class LogGeneratorViewModel: ObservableObject {
                 "id": 123,
                 "name": "홍길동",
                 "email": "hong@example.com",
-                "createdAt": "2025-12-15T10:30:00Z"
+                "createdAt": "2025-12-15T10:30:00Z",
             ],
             "headers": [
                 "Content-Type": "application/json",
-                "X-Request-Id": "req-abc123"
-            ]
+                "X-Request-Id": "req-abc123",
+            ],
         ]
-        
+
         Task {
             await Logger.shared.info(
                 "API 응답 성공",
@@ -109,13 +108,13 @@ final class LogGeneratorViewModel: ObservableObject {
                 metadata: responseMetadata
             )
         }
-        
+
         lastLoggedLevel = .info
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.lastLoggedLevel = nil
         }
     }
-    
+
     func logNetworkError() {
         let errorMetadata: [String: AnyCodable] = [
             "statusCode": 401,
@@ -126,13 +125,13 @@ final class LogGeneratorViewModel: ObservableObject {
                 "message": "토큰이 만료되었습니다",
                 "details": [
                     "expiredAt": "2025-12-15T09:00:00Z",
-                    "tokenType": "access_token"
-                ]
+                    "tokenType": "access_token",
+                ],
             ],
             "retryable": true,
-            "retryCount": 0
+            "retryCount": 0,
         ]
-        
+
         Task {
             await Logger.shared.error(
                 "API 요청 실패: 인증 오류",
@@ -140,13 +139,13 @@ final class LogGeneratorViewModel: ObservableObject {
                 metadata: errorMetadata
             )
         }
-        
+
         lastLoggedLevel = .error
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.lastLoggedLevel = nil
         }
     }
-    
+
     func logNetworkFullCycle() {
         Task {
             // 1. Request
@@ -159,13 +158,13 @@ final class LogGeneratorViewModel: ObservableObject {
                     "body": [
                         "productId": 456,
                         "quantity": 2,
-                        "userId": 123
-                    ]
+                        "userId": 123,
+                    ],
                 ]
             )
-            
+
             try? await Task.sleep(nanoseconds: 500_000_000)
-            
+
             // 2. Response
             await Logger.shared.info(
                 "API 응답 수신",
@@ -177,40 +176,39 @@ final class LogGeneratorViewModel: ObservableObject {
                         "orderId": "ORD-2025-001234",
                         "status": "created",
                         "totalAmount": 59800,
-                        "estimatedDelivery": "2025-12-18"
-                    ]
+                        "estimatedDelivery": "2025-12-18",
+                    ],
                 ]
             )
-            
+
             try? await Task.sleep(nanoseconds: 200_000_000)
-            
+
             // 3. Completion
             await Logger.shared.verbose(
                 "주문 처리 완료",
                 category: "Network",
                 metadata: [
                     "orderId": "ORD-2025-001234",
-                    "processingTime": 0.712
+                    "processingTime": 0.712,
                 ]
             )
         }
     }
-    
+
     private func sampleMessage(for level: LogLevel) -> String {
         switch level {
         case .verbose:
-            return "변수 값 확인: count=42, offset=128"
+            "변수 값 확인: count=42, offset=128"
         case .debug:
-            return "API 요청 준비 중: GET /api/users"
+            "API 요청 준비 중: GET /api/users"
         case .info:
-            return "사용자가 설정 화면에 진입했습니다"
+            "사용자가 설정 화면에 진입했습니다"
         case .warning:
-            return "토큰 만료 10분 전입니다"
+            "토큰 만료 10분 전입니다"
         case .error:
-            return "네트워크 요청 실패: timeout"
+            "네트워크 요청 실패: timeout"
         case .fatal:
-            return "데이터베이스 연결 끊김"
+            "데이터베이스 연결 끊김"
         }
     }
 }
-
