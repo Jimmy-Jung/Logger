@@ -20,6 +20,9 @@ public struct PrettyLogFormatter: LogFormatter {
     /// 이모지 사용 여부
     public let useEmoji: Bool
     
+    /// 메타데이터 줄바꿈 출력 여부
+    public let prettyPrintMetadata: Bool
+    
     /// 날짜 포맷터
     private let dateFormatter: DateFormatter
     
@@ -27,12 +30,14 @@ public struct PrettyLogFormatter: LogFormatter {
         includeTimestamp: Bool = true,
         includeLocation: Bool = true,
         includeMetadata: Bool = true,
-        useEmoji: Bool = true
+        useEmoji: Bool = true,
+        prettyPrintMetadata: Bool = true
     ) {
         self.includeTimestamp = includeTimestamp
         self.includeLocation = includeLocation
         self.includeMetadata = includeMetadata
         self.useEmoji = useEmoji
+        self.prettyPrintMetadata = prettyPrintMetadata
         
         self.dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "HH:mm:ss.SSS"
@@ -68,11 +73,59 @@ public struct PrettyLogFormatter: LogFormatter {
         
         // 메타데이터
         if includeMetadata, let metadata = message.metadata, !metadata.isEmpty {
-            let metadataString = metadata.map { "\($0.key)=\($0.value)" }.joined(separator: ", ")
-            result += " {\(metadataString)}"
+            if prettyPrintMetadata {
+                result += "\n" + formatMetadataPretty(metadata, indent: "  ")
+            } else {
+                let metadataString = metadata.map { "\($0.key)=\($0.value)" }.joined(separator: ", ")
+                result += " {\(metadataString)}"
+            }
         }
         
         return result
+    }
+    
+    // MARK: - Private
+    
+    private func formatMetadataPretty(_ metadata: [String: AnyCodable], indent: String) -> String {
+        var lines: [String] = []
+        let sortedKeys = metadata.keys.sorted()
+        
+        for key in sortedKeys {
+            guard let value = metadata[key] else { continue }
+            let formattedValue = formatValue(value.value, indent: indent + "  ")
+            lines.append("\(indent)\(key): \(formattedValue)")
+        }
+        
+        return lines.joined(separator: "\n")
+    }
+    
+    private func formatValue(_ value: Any, indent: String) -> String {
+        switch value {
+        case let dict as [String: Any]:
+            if dict.isEmpty { return "{}" }
+            var lines: [String] = []
+            let sortedKeys = dict.keys.sorted()
+            for key in sortedKeys {
+                guard let val = dict[key] else { continue }
+                let formattedVal = formatValue(val, indent: indent + "  ")
+                lines.append("\(indent)\(key): \(formattedVal)")
+            }
+            return "\n" + lines.joined(separator: "\n")
+            
+        case let array as [Any]:
+            if array.isEmpty { return "[]" }
+            let items = array.map { formatValue($0, indent: indent) }
+            return "[\(items.joined(separator: ", "))]"
+            
+        case let string as String:
+            return string
+            
+        case let number as NSNumber:
+            return "\(number)"
+            
+        default:
+            return String(describing: value)
+        }
     }
 }
 

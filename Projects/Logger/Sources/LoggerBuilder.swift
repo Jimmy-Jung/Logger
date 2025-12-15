@@ -51,11 +51,13 @@ public final class LoggerBuilder: @unchecked Sendable {
     @discardableResult
     public func addOSLog(
         subsystem: String = Bundle.main.bundleIdentifier ?? "com.logger",
-        minLevel: LogLevel = .verbose
+        minLevel: LogLevel = .verbose,
+        formatter: LogFormatter? = nil
     ) -> Self {
         let oslog = OSLogDestination(
             subsystem: subsystem,
-            minLevel: minLevel
+            minLevel: minLevel,
+            formatter: formatter
         )
         return addDestination(oslog)
     }
