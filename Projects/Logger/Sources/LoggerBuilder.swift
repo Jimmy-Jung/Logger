@@ -8,31 +8,31 @@ import Foundation
 /// 로거 빌더
 /// - Note: 빌더 패턴으로 Logger 구성
 public final class LoggerBuilder: @unchecked Sendable {
-    
     // MARK: - Properties
-    
+
     private var destinations: [any LogDestination] = []
     private var configuration: LoggerConfiguration = .default
     private var bufferPolicy: LogBufferPolicy?
     private var samplingPolicy: SamplingPolicy?
     private var sanitizer: LogSanitizer?
     private var contextProvider: (any UserContextProvider)?
+    private var useDefaultContextProvider: Environment?
     private var crashPreserveCount: Int?
     private var applyLaunchArgs: Bool = false
-    
+
     // MARK: - Init
-    
+
     public init() {}
-    
+
     // MARK: - Builder Methods
-    
+
     /// Destination 추가
     @discardableResult
     public func addDestination(_ destination: any LogDestination) -> Self {
         destinations.append(destination)
         return self
     }
-    
+
     /// 콘솔 Destination 추가
     @discardableResult
     public func addConsole(
@@ -45,7 +45,7 @@ public final class LoggerBuilder: @unchecked Sendable {
         )
         return addDestination(console)
     }
-    
+
     /// OSLog Destination 추가
     @available(iOS 14.0, *)
     @discardableResult
@@ -61,7 +61,7 @@ public final class LoggerBuilder: @unchecked Sendable {
         )
         return addDestination(oslog)
     }
-    
+
     /// 파일 Destination 추가
     @discardableResult
     public func addFile(
@@ -75,72 +75,72 @@ public final class LoggerBuilder: @unchecked Sendable {
         )
         return addDestination(file)
     }
-    
+
     /// 설정 적용
     @discardableResult
     public func with(configuration: LoggerConfiguration) -> Self {
         self.configuration = configuration
         return self
     }
-    
+
     /// 버퍼 정책 설정
     @discardableResult
     public func withBuffer(policy: LogBufferPolicy = .default) -> Self {
-        self.bufferPolicy = policy
+        bufferPolicy = policy
         return self
     }
-    
+
     /// 샘플링 정책 설정
     @discardableResult
     public func withSampling(policy: SamplingPolicy) -> Self {
-        self.samplingPolicy = policy
+        samplingPolicy = policy
         return self
     }
-    
+
     /// 정제기 설정
     @discardableResult
     public func withSanitizer(_ sanitizer: LogSanitizer) -> Self {
         self.sanitizer = sanitizer
         return self
     }
-    
+
     /// 기본 정제기 사용
     @discardableResult
     public func withDefaultSanitizer() -> Self {
-        self.sanitizer = DefaultLogSanitizer()
+        sanitizer = DefaultLogSanitizer()
         return self
     }
-    
+
     /// 컨텍스트 제공자 설정
     @discardableResult
     public func withContextProvider(_ provider: any UserContextProvider) -> Self {
-        self.contextProvider = provider
+        contextProvider = provider
         return self
     }
-    
+
     /// 기본 컨텍스트 제공자 사용
     @discardableResult
     public func withDefaultContextProvider(environment: Environment = .debug) -> Self {
-        self.contextProvider = DefaultUserContextProvider(environment: environment)
+        useDefaultContextProvider = environment
         return self
     }
-    
+
     /// 크래시 로그 보존 활성화
     @discardableResult
     public func withCrashPreservation(count: Int = 50) -> Self {
-        self.crashPreserveCount = count
+        crashPreserveCount = count
         return self
     }
-    
+
     /// Launch Argument 오버라이드 적용
     @discardableResult
     public func applyLaunchArguments() -> Self {
-        self.applyLaunchArgs = true
+        applyLaunchArgs = true
         return self
     }
-    
+
     // MARK: - Build
-    
+
     /// Logger 빌드
     @LoggerActor
     public func build() async -> Logger {
@@ -149,69 +149,72 @@ public final class LoggerBuilder: @unchecked Sendable {
         if applyLaunchArgs, let launchConfig = LaunchArgumentParser.parse() {
             finalConfig = finalConfig.merged(with: launchConfig)
         }
-        
+
         let logger = Logger(configuration: finalConfig)
-        
+
         // Destinations 추가
         for destination in destinations {
             logger.addDestination(destination)
         }
-        
+
         // 버퍼 설정
         if let bufferPolicy = bufferPolicy {
             let buffer = LogBuffer(policy: bufferPolicy)
             logger.setBuffer(buffer)
         }
-        
+
         // 샘플러 설정
         if let samplingPolicy = samplingPolicy {
             let sampler = LogSampler(policy: samplingPolicy)
             logger.setSampler(sampler)
         }
-        
+
         // 정제기 설정
         if let sanitizer = sanitizer {
             logger.setSanitizer(sanitizer)
         }
-        
+
         // 컨텍스트 제공자 설정
         if let contextProvider = contextProvider {
             logger.setContextProvider(contextProvider)
+        } else if let environment = useDefaultContextProvider {
+            let defaultProvider = await DefaultUserContextProvider(environment: environment)
+            logger.setContextProvider(defaultProvider)
         }
-        
+
         // 크래시 보존기 설정
         if let crashPreserveCount = crashPreserveCount {
             let crashPreserver = CrashLogPreserver(preserveCount: crashPreserveCount)
             logger.setCrashPreserver(crashPreserver)
         }
-        
+
         return logger
     }
-    
+
     /// 공유 인스턴스로 빌드
     @LoggerActor
     public func buildAsShared() async -> Logger {
         let logger = await build()
-        Logger.shared = logger
+        Logger.setShared(logger)
         return logger
     }
 }
 
 // MARK: - Convenience
 
-extension LoggerBuilder {
+public extension LoggerBuilder {
     /// 디버그용 기본 설정
-    public static func debug() -> LoggerBuilder {
+    static func debug() -> LoggerBuilder {
         LoggerBuilder()
             .addConsole(formatter: PrettyLogFormatter.verbose)
             .with(configuration: .debug)
             .withDefaultSanitizer()
             .applyLaunchArguments()
     }
-    
+
     /// 프로덕션용 기본 설정
     @available(iOS 14.0, *)
-    public static func production() -> LoggerBuilder {
+    static func production() -> LoggerBuilder {
         LoggerBuilder()
             .addConsole(minLevel: .warning)
             .addOSLog(minLevel: .info)
@@ -224,4 +227,3 @@ extension LoggerBuilder {
             .applyLaunchArguments()
     }
 }
-
