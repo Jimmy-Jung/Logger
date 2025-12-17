@@ -27,14 +27,12 @@ final class LogGeneratorViewModel: ObservableObject {
         let message = customMessage.isEmpty ? sampleMessage(for: level) : customMessage
         let metadata = includeMetadata ? sampleMetadata : nil
 
-        Task {
-            await Logger.shared.log(
-                level: level,
-                message,
-                category: selectedCategory,
-                metadata: metadata
-            )
-        }
+        Logger.log(
+            level: level,
+            message,
+            category: selectedCategory,
+            metadata: metadata
+        )
 
         lastLoggedLevel = level
 
@@ -46,7 +44,7 @@ final class LogGeneratorViewModel: ObservableObject {
     func logAllLevels() {
         Task {
             for level in LogLevel.allCases {
-                await Logger.shared.log(
+                Logger.log(
                     level: level,
                     sampleMessage(for: level),
                     category: selectedCategory
@@ -70,13 +68,11 @@ final class LogGeneratorViewModel: ObservableObject {
             "timeout": 30.0,
         ]
 
-        Task {
-            await Logger.shared.debug(
-                "API 요청 시작",
-                category: "Network",
-                metadata: requestMetadata
-            )
-        }
+        Logger.debug(
+            "API 요청 시작",
+            category: "Network",
+            metadata: requestMetadata
+        )
 
         lastLoggedLevel = .debug
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
@@ -101,13 +97,11 @@ final class LogGeneratorViewModel: ObservableObject {
             ],
         ]
 
-        Task {
-            await Logger.shared.info(
-                "API 응답 성공",
-                category: "Network",
-                metadata: responseMetadata
-            )
-        }
+        Logger.info(
+            "API 응답 성공",
+            category: "Network",
+            metadata: responseMetadata
+        )
 
         lastLoggedLevel = .info
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
@@ -132,13 +126,11 @@ final class LogGeneratorViewModel: ObservableObject {
             "retryCount": 0,
         ]
 
-        Task {
-            await Logger.shared.error(
-                "API 요청 실패: 인증 오류",
-                category: "Network",
-                metadata: errorMetadata
-            )
-        }
+        Logger.error(
+            "API 요청 실패: 인증 오류",
+            category: "Network",
+            metadata: errorMetadata
+        )
 
         lastLoggedLevel = .error
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
@@ -149,7 +141,7 @@ final class LogGeneratorViewModel: ObservableObject {
     func logNetworkFullCycle() {
         Task {
             // 1. Request
-            await Logger.shared.debug(
+            Logger.debug(
                 "API 요청 시작",
                 category: "Network",
                 metadata: [
@@ -166,7 +158,7 @@ final class LogGeneratorViewModel: ObservableObject {
             try? await Task.sleep(nanoseconds: 500_000_000)
 
             // 2. Response
-            await Logger.shared.info(
+            Logger.info(
                 "API 응답 수신",
                 category: "Network",
                 metadata: [
@@ -184,7 +176,7 @@ final class LogGeneratorViewModel: ObservableObject {
             try? await Task.sleep(nanoseconds: 200_000_000)
 
             // 3. Completion
-            await Logger.shared.verbose(
+            Logger.verbose(
                 "주문 처리 완료",
                 category: "Network",
                 metadata: [

@@ -8,17 +8,16 @@ import Logger
 
 @MainActor
 final class SanitizerDemoViewModel: ObservableObject {
-    
     struct SampleData: Identifiable {
         let id = UUID()
         let name: String
         let original: String
         let pattern: SensitiveDataPattern
     }
-    
+
     @Published var customInput: String = ""
     @Published var sanitizedOutput: String = ""
-    
+
     let sampleDataList: [SampleData] = [
         SampleData(
             name: "이메일",
@@ -49,13 +48,13 @@ final class SanitizerDemoViewModel: ObservableObject {
             name: "비밀번호",
             original: "password=mySecretPass123!",
             pattern: .password
-        )
+        ),
     ]
-    
+
     let patterns: [SensitiveDataPattern] = SensitiveDataPattern.defaults + [.ipAddress, .phoneNumberIntl]
-    
+
     private let sanitizer = DefaultLogSanitizer()
-    
+
     func sanitize(_ input: String) -> String {
         let message = LogMessage(
             level: .info,
@@ -67,7 +66,7 @@ final class SanitizerDemoViewModel: ObservableObject {
         )
         return sanitizer.sanitize(message).message
     }
-    
+
     func updateOutput() {
         guard !customInput.isEmpty else {
             sanitizedOutput = ""
@@ -75,23 +74,19 @@ final class SanitizerDemoViewModel: ObservableObject {
         }
         sanitizedOutput = sanitize(customInput)
     }
-    
+
     func logOriginal(_ data: SampleData) {
-        Task {
-            await Logger.shared.info(
-                "[원본] \(data.original)",
-                category: "Sanitizer"
-            )
-        }
+        Logger.info(
+            "[원본] \(data.original)",
+            category: "Sanitizer"
+        )
     }
-    
+
     func logSanitized(_ data: SampleData) {
         let sanitized = sanitize(data.original)
-        Task {
-            await Logger.shared.info(
-                "[마스킹] \(sanitized)",
-                category: "Sanitizer"
-            )
-        }
+        Logger.info(
+            "[마스킹] \(sanitized)",
+            category: "Sanitizer"
+        )
     }
 }

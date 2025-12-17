@@ -52,8 +52,8 @@ final class SettingsViewModel: ObservableObject {
         )
         
         Task {
-            await Logger.shared.configure(configuration)
-            await Logger.shared.info(
+            await Logger.async.configure(configuration)
+            await Logger.async.info(
                 "설정이 변경되었습니다: minLevel=\(minLevel.name), sampleRate=\(sampleRate)",
                 category: "Settings"
             )
@@ -153,13 +153,9 @@ final class SettingsViewModel: ObservableObject {
             try FileManager.default.removeItem(at: file.url)
             loadLogFiles()
             
-            Task {
-                await Logger.shared.info("로그 파일 삭제됨: \(file.name)", category: "Settings")
-            }
+            Logger.info("로그 파일 삭제됨: \(file.name)", category: "Settings")
         } catch {
-            Task {
-                await Logger.shared.error("로그 파일 삭제 실패: \(error.localizedDescription)", category: "Settings")
-            }
+            Logger.error("로그 파일 삭제 실패: \(error.localizedDescription)", category: "Settings")
         }
     }
     
@@ -174,13 +170,9 @@ final class SettingsViewModel: ObservableObject {
             }
             loadLogFiles()
             
-            Task {
-                await Logger.shared.info("모든 로그 파일이 삭제되었습니다", category: "Settings")
-            }
+            Logger.info("모든 로그 파일이 삭제되었습니다", category: "Settings")
         } catch {
-            Task {
-                await Logger.shared.error("로그 파일 삭제 실패: \(error.localizedDescription)", category: "Settings")
-            }
+            Logger.error("로그 파일 삭제 실패: \(error.localizedDescription)", category: "Settings")
         }
     }
     

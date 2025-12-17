@@ -8,91 +8,91 @@ import Logger
 
 @MainActor
 final class PerformanceViewModel: ObservableObject {
-    
     struct MeasurementResult: Identifiable {
         let id = UUID()
         let name: String
         let duration: TimeInterval
         let timestamp: Date
     }
-    
+
     @Published var results: [MeasurementResult] = []
     @Published var isRunning: Bool = false
     @Published var currentOperation: String = ""
-    
+
     // MARK: - Measure Demo
-    
+
     func runMeasureDemo() async {
         isRunning = true
         currentOperation = "measure() 시연 중..."
-        
-        let duration = await Logger.shared.measure(name: "데이터 로딩 시뮬레이션") {
-            await simulateNetworkRequest(delay: 1.5)
-            return "completed"
-        }
-        
-        // duration은 Void를 반환하므로 tracer에서 가져옴
+
+        let spanId = await Logger.async.tracer.startSpan(name: "데이터 로딩 시뮬레이션")
+
+        await simulateNetworkRequest(delay: 1.5)
+
+        let completedSpan = await Logger.async.tracer.endSpan(id: spanId)
+
+        let duration = completedSpan?.durationMs.map { $0 / 1000.0 } ?? 1.5
         let result = MeasurementResult(
             name: "데이터 로딩 시뮬레이션",
-            duration: 1.5,
+            duration: duration,
             timestamp: Date()
         )
         results.insert(result, at: 0)
-        
+
         isRunning = false
         currentOperation = ""
     }
-    
+
     // MARK: - Span Demo
-    
+
     func runSpanDemo() async {
         isRunning = true
         currentOperation = "Span 시연 중..."
-        
+
         let startTime = Date()
-        
+
         // Parent span
-        let parentId = await Logger.shared.startSpan(name: "전체 프로세스")
-        
+        let parentId = await Logger.async.startSpan(name: "전체 프로세스")
+
         // Child span 1
-        let child1Id = await Logger.shared.startSpan(name: "데이터 페칭", parentId: parentId)
+        let child1Id = await Logger.async.startSpan(name: "데이터 페칭", parentId: parentId)
         await simulateNetworkRequest(delay: 0.5)
-        await Logger.shared.endSpan(id: child1Id)
-        
+        await Logger.async.endSpan(id: child1Id)
+
         let result1 = MeasurementResult(
             name: "  └ 데이터 페칭",
             duration: 0.5,
             timestamp: Date()
         )
         results.insert(result1, at: 0)
-        
+
         // Child span 2
-        let child2Id = await Logger.shared.startSpan(name: "데이터 파싱", parentId: parentId)
+        let child2Id = await Logger.async.startSpan(name: "데이터 파싱", parentId: parentId)
         await simulateProcessing(delay: 0.3)
-        await Logger.shared.endSpan(id: child2Id)
-        
+        await Logger.async.endSpan(id: child2Id)
+
         let result2 = MeasurementResult(
             name: "  └ 데이터 파싱",
             duration: 0.3,
             timestamp: Date()
         )
         results.insert(result2, at: 0)
-        
+
         // Child span 3
-        let child3Id = await Logger.shared.startSpan(name: "UI 업데이트", parentId: parentId)
+        let child3Id = await Logger.async.startSpan(name: "UI 업데이트", parentId: parentId)
         await simulateUIUpdate(delay: 0.2)
-        await Logger.shared.endSpan(id: child3Id)
-        
+        await Logger.async.endSpan(id: child3Id)
+
         let result3 = MeasurementResult(
             name: "  └ UI 업데이트",
             duration: 0.2,
             timestamp: Date()
         )
         results.insert(result3, at: 0)
-        
+
         // End parent
-        await Logger.shared.endSpan(id: parentId)
-        
+        await Logger.async.endSpan(id: parentId)
+
         let totalDuration = Date().timeIntervalSince(startTime)
         let parentResult = MeasurementResult(
             name: "전체 프로세스",
@@ -100,63 +100,62 @@ final class PerformanceViewModel: ObservableObject {
             timestamp: Date()
         )
         results.insert(parentResult, at: 0)
-        
+
         isRunning = false
         currentOperation = ""
     }
-    
+
     // MARK: - Heavy Operation Demo
-    
+
     func runHeavyOperationDemo() async {
         isRunning = true
         currentOperation = "무거운 작업 시연 중..."
-        
+
         let startTime = Date()
-        
-        await Logger.shared.info("무거운 작업 시작", category: "Performance")
-        
+
+        Logger.info("무거운 작업 시작", category: "Performance")
+
         // Simulate heavy computation
         await withTaskGroup(of: Void.self) { group in
-            for i in 1...5 {
+            for i in 1 ... 5 {
                 group.addTask {
                     await self.simulateProcessing(delay: 0.3)
-                    await Logger.shared.debug("서브태스크 \(i) 완료", category: "Performance")
+                    Logger.debug("서브태스크 \(i) 완료", category: "Performance")
                 }
             }
         }
-        
+
         let duration = Date().timeIntervalSince(startTime)
-        await Logger.shared.info("무거운 작업 완료: \(String(format: "%.2f", duration))초", category: "Performance")
-        
+        Logger.info("무거운 작업 완료: \(String(format: "%.2f", duration))초", category: "Performance")
+
         let result = MeasurementResult(
             name: "병렬 작업 (5개 서브태스크)",
             duration: duration,
             timestamp: Date()
         )
         results.insert(result, at: 0)
-        
+
         isRunning = false
         currentOperation = ""
     }
-    
+
     // MARK: - Clear
-    
+
     func clearResults() {
         results.removeAll()
     }
-    
+
     // MARK: - Simulation Helpers
-    
+
     private func simulateNetworkRequest(delay: TimeInterval) async {
         try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
     }
-    
+
     private func simulateProcessing(delay: TimeInterval) async {
         try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
     }
-    
+
     private func simulateUIUpdate(delay: TimeInterval) async {
         try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
     }
 }
-
