@@ -147,3 +147,7 @@ Derived/
 *.backup
 *.test
 *.bak
+
+
+# Build Server #
+buildServer.json
