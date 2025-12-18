@@ -132,7 +132,7 @@ public final class TraceKit {
     /// 로그 출력
     public func log(
         level: TraceLevel,
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @Sendable () -> String,
         category: String = "Default",
         metadata: [String: AnyCodable]? = nil,
         file: String = #file,
@@ -192,7 +192,7 @@ public final class TraceKit {
     // MARK: - Convenience Methods
 
     public func verbose(
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @Sendable () -> String,
         category: String = "Default",
         metadata: [String: AnyCodable]? = nil,
         file: String = #file,
@@ -211,7 +211,7 @@ public final class TraceKit {
     }
 
     public func debug(
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @Sendable () -> String,
         category: String = "Default",
         metadata: [String: AnyCodable]? = nil,
         file: String = #file,
@@ -230,7 +230,7 @@ public final class TraceKit {
     }
 
     public func info(
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @Sendable () -> String,
         category: String = "Default",
         metadata: [String: AnyCodable]? = nil,
         file: String = #file,
@@ -249,7 +249,7 @@ public final class TraceKit {
     }
 
     public func warning(
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @Sendable () -> String,
         category: String = "Default",
         metadata: [String: AnyCodable]? = nil,
         file: String = #file,
@@ -268,7 +268,7 @@ public final class TraceKit {
     }
 
     public func error(
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @Sendable () -> String,
         category: String = "Default",
         metadata: [String: AnyCodable]? = nil,
         file: String = #file,
@@ -287,7 +287,7 @@ public final class TraceKit {
     }
 
     public func fatal(
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @Sendable () -> String,
         category: String = "Default",
         metadata: [String: AnyCodable]? = nil,
         file: String = #file,
@@ -372,7 +372,7 @@ public extension TraceKit {
     /// - Note: await 없이 호출 가능. 내부적으로 Task를 생성하여 비동기 처리
     nonisolated static func log(
         level: TraceLevel,
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @Sendable () -> String,
         category: String = "Default",
         metadata: [String: AnyCodable]? = nil,
         file: String = #file,
@@ -395,7 +395,7 @@ public extension TraceKit {
 
     /// 정적 verbose 로그 (Fire-and-Forget)
     nonisolated static func verbose(
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @Sendable () -> String,
         category: String = "Default",
         metadata: [String: AnyCodable]? = nil,
         file: String = #file,
@@ -407,7 +407,7 @@ public extension TraceKit {
 
     /// 정적 debug 로그 (Fire-and-Forget)
     nonisolated static func debug(
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @Sendable () -> String,
         category: String = "Default",
         metadata: [String: AnyCodable]? = nil,
         file: String = #file,
@@ -419,7 +419,7 @@ public extension TraceKit {
 
     /// 정적 info 로그 (Fire-and-Forget)
     nonisolated static func info(
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @Sendable () -> String,
         category: String = "Default",
         metadata: [String: AnyCodable]? = nil,
         file: String = #file,
@@ -431,7 +431,7 @@ public extension TraceKit {
 
     /// 정적 warning 로그 (Fire-and-Forget)
     nonisolated static func warning(
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @Sendable () -> String,
         category: String = "Default",
         metadata: [String: AnyCodable]? = nil,
         file: String = #file,
@@ -443,7 +443,7 @@ public extension TraceKit {
 
     /// 정적 error 로그 (Fire-and-Forget)
     nonisolated static func error(
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @Sendable () -> String,
         category: String = "Default",
         metadata: [String: AnyCodable]? = nil,
         file: String = #file,
@@ -455,7 +455,7 @@ public extension TraceKit {
 
     /// 정적 fatal 로그 (Fire-and-Forget)
     nonisolated static func fatal(
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @Sendable () -> String,
         category: String = "Default",
         metadata: [String: AnyCodable]? = nil,
         file: String = #file,
