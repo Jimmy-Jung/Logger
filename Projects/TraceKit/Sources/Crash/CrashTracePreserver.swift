@@ -284,5 +284,5 @@ public extension CrashTracePreserver {
 
 // MARK: - 전역 변수 (Signal Handler용)
 
-private var crashMmapPtr: UnsafeMutableRawPointer?
-private var crashMmapSize: Int = 0
+private nonisolated(unsafe) var crashMmapPtr: UnsafeMutableRawPointer?
+private nonisolated(unsafe) var crashMmapSize: Int = 0
