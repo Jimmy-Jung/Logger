@@ -12,9 +12,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Job 1: Tuist 테스트 (iOS)
-  test-tuist:
-    name: Test with Tuist
+  # Job 1: iOS 테스트
+  test-ios:
+    name: Test iOS
     runs-on: macos-14
     
     steps:
@@ -24,11 +24,15 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_15.2.app
       
-      - name: Install Tuist
-        run: brew install tuist
-      
       - name: Test TraceKit
-        run: tuist test TraceKit
+        run: |
+          xcodebuild test \
+            -scheme TraceKit \
+            -workspace TraceKit.xcworkspace \
+            -destination 'platform=iOS Simulator,name=iPhone 15 Pro' \
+            -enableCodeCoverage YES \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
       
       - name: Upload Coverage
         uses: codecov/codecov-action@v3
@@ -54,16 +58,11 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_15.2.app
       
-      - name: Install Tuist
-        run: brew install tuist
-      
-      - name: Generate Project
-        run: tuist generate
-      
       - name: Build ${{ matrix.platform.name }}
         run: |
           xcodebuild build \
             -scheme TraceKit \
+            -workspace TraceKit.xcworkspace \
             -destination "${{ matrix.platform.destination }}" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO
