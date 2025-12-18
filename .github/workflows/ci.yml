@@ -24,18 +24,11 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_15.2.app
       
-      - name: Install Mise
-        run: |
-          curl https://mise.jdx.dev/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-      
       - name: Install Tuist
-        run: |
-          $HOME/.local/bin/mise use -g tuist@latest
-          $HOME/.local/bin/mise install tuist
+        run: brew install tuist
       
       - name: Test TraceKit
-        run: $HOME/.local/bin/mise exec -- tuist test TraceKit
+        run: tuist test TraceKit
       
       - name: Upload Coverage
         uses: codecov/codecov-action@v3
@@ -61,18 +54,11 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_15.2.app
       
-      - name: Install Mise
-        run: |
-          curl https://mise.jdx.dev/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-      
       - name: Install Tuist
-        run: |
-          $HOME/.local/bin/mise use -g tuist@latest
-          $HOME/.local/bin/mise install tuist
+        run: brew install tuist
       
       - name: Generate Project
-        run: $HOME/.local/bin/mise exec -- tuist generate
+        run: tuist generate
       
       - name: Build ${{ matrix.platform.name }}
         run: |
