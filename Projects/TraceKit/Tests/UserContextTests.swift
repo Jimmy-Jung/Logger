@@ -98,7 +98,7 @@ struct UserContextTests {
     @Test("toDictionary가 customAttributes 포함")
     func toDictionaryContainsCustomAttributes() {
         // Given
-        var context = UserContext(
+        let context = UserContext(
             deviceId: "device",
             appVersion: "1.0",
             buildNumber: "1",
