@@ -187,7 +187,7 @@ final class LogGeneratorViewModel: ObservableObject {
         }
     }
 
-    private func sampleMessage(for level: TraceLevel) -> String {
+    nonisolated private func sampleMessage(for level: TraceLevel) -> String {
         switch level {
         case .verbose:
             "변수 값 확인: count=42, offset=128"
