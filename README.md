@@ -171,7 +171,7 @@ Xcode에서 다음 launch argument로 로거를 제어할 수 있습니다:
 1. Xcode에서 File > Add Package Dependencies...
 2. 다음 URL 입력:
 ```
-https://github.com/jimmy/TraceKit
+https://github.com/megastudymobile/ms-tracekit-ios
 ```
 3. 버전 규칙 선택 (예: "Up to Next Major Version" - 1.0.0)
 4. 필요한 패키지 선택:
@@ -185,7 +185,7 @@ https://github.com/jimmy/TraceKit
 ```swift
 // Package.swift
 dependencies: [
-    .package(url: "https://github.com/jimmy/TraceKit", from: "1.0.0")
+    .package(url: "https://github.com/megastudymobile/ms-tracekit-ios", from: "1.0.0")
 ],
 targets: [
     .target(
@@ -206,7 +206,7 @@ targets: [
 ```swift
 // Package.swift (Tuist 의존성)
 dependencies: [
-    .package(url: "https://github.com/jimmy/TraceKit", from: "1.0.0")
+    .package(url: "https://github.com/megastudymobile/ms-tracekit-ios", from: "1.0.0")
 ]
 
 // Project.swift
@@ -258,7 +258,17 @@ let project = Project(
 
 ## 라이선스
 
-MIT License
+MIT License - Copyright (c) 2025 MegastudyEdu Corp. Mobile Development Team
+
+Original Author: Jung Junyoung
+
+자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+
+---
+
+## 개발
+
+Developed by MegastudyEdu Mobile Development Team
 
 ---
 
